@@ -21,28 +21,26 @@ async def ping(ctx):
 
 @bot.command()
 async def send(ctx):
-    print(ctx.message.content)
-    await ctx.send("Command retrieved:\n" + ctx.message.content[6:])
     # send post to disc_notifications with the account and minutes_passed
-    # data = {
-    #     "command": ctx.message.content,
-    # }
+    data = {
+        "command": ctx.message.content[6:],
+    }
 
-    # headers = {
-    #     "Content-Type": "application/json"
-    # }
+    headers = {
+        "Content-Type": "application/json"
+    }
 
-    # result = requests.post(
-    #     app_ws, json=data, headers=headers)
+    result = requests.post(
+        app_ws, json=data, headers=headers)
 
-    # if 200 <= result.status_code < 300:
-    #     print(f"Webhook sent {result.status_code}")
-    #     await ctx.send("Command retrieved!")
+    if 200 <= result.status_code < 300:
+        print(f"Webhook sent {result.status_code}")
+        await ctx.send("Command retrieved!")
 
-    # else:
-    #     print(
-    #         f"Not sent with {result.status_code}, response:\n{result.json()}")
-    #     await ctx.send("Failed retrieving command!")
+    else:
+        print(
+            f"Not sent with {result.status_code}, response:\n{result.json()}")
+        await ctx.send("Failed retrieving command!")
 
 
 bot.run(os.environ["DISCORD_TOKEN"])
