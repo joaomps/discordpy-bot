@@ -22,7 +22,7 @@ async def ping(ctx):
 @bot.command()
 async def send(ctx):
     print(ctx.message.content)
-    await ctx.send("Command retrieved:\n" + ctx.message.content[5:])
+    await ctx.send("Command retrieved:\n" + ctx.message.content[6:])
     # send post to disc_notifications with the account and minutes_passed
     # data = {
     #     "command": ctx.message.content,
