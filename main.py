@@ -10,6 +10,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 app_ws = 'https://expressjs-prisma-production-36b8.up.railway.app/commands/'
+app_accounts_ws = 'https://expressjs-prisma-production-36b8.up.railway.app/accounts'
 
 @bot.event
 async def on_ready():
@@ -42,5 +43,18 @@ async def send(ctx):
             f"Not sent with {result.status_code}, response:\n{result.json()}")
         await ctx.send("Failed retrieving command!")
 
+@bot.command()
+async def online(ctx):
+    # send get request to app_accounts_ws
+    result = requests.get(app_accounts_ws)
+    msg = ''
+    # iterate over result and add to msg the account and lastseen fields
+    for account in result.json():
+        print(account)
+        msg += f"{account['account']} is online and was last seen at {account['lastseen']}\n"
+
+    print(msg)
+    
+    await ctx.send(msg)
 
 bot.run(os.environ["DISCORD_TOKEN"])
