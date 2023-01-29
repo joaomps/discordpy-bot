@@ -20,7 +20,8 @@ async def ping(ctx):
 
 @bot.command()
 async def send(ctx):
-    print(ctx.content)
+    print(ctx.message)
+    print(ctx.message.content)
     await ctx.send("Choo choo! 🚅")
 
 
