@@ -19,7 +19,8 @@ async def ping(ctx):
     await ctx.send('pong')
 
 @bot.command()
-async def hello(ctx):
+async def send(ctx):
+    print(ctx.content)
     await ctx.send("Choo choo! 🚅")
 
 
