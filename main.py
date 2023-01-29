@@ -2,6 +2,7 @@
 
 import os
 import requests
+from datetime import datetime
 import discord
 from discord.ext import commands
 
@@ -50,11 +51,11 @@ async def online(ctx):
     msg = ''
     # iterate over result and add to msg the account and lastseen fields
     for account in result.json():
-        print(account)
-        msg += f"{account['account']} is online and was last seen at {account['lastseen']}\n"
+        lastseen = account['lastseen']
+        datetime_object = datetime.fromisoformat(lastseen)
+        beauty_date = datetime_object.strftime("%B %d, %Y %I:%M %p")
+        msg += f"{account['account']} was last seen on {beauty_date}\n"
 
-    print(msg)
-    
     await ctx.send(msg)
 
 bot.run(os.environ["DISCORD_TOKEN"])
