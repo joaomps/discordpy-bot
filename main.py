@@ -52,7 +52,7 @@ async def online(ctx):
     # iterate over result and add to msg the account and lastseen fields
     for account in result.json():
         lastseen = account['lastseen']
-        datetime_object = datetime.fromisoformat(lastseen)
+        datetime_object = datetime.strptime(lastseen, "%Y-%m-%dT%H:%M:%S.%fZ")
         beauty_date = datetime_object.strftime("%B %d, %Y %I:%M %p")
         msg += f"{account['account']} was last seen on {beauty_date}\n"
 
