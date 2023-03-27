@@ -118,11 +118,11 @@ async def handle_whisper(ctx):
             return
 
         data = {
-            "command": 'Whisper,' + account_name+","+receiver_name+","+message_whisper.content
+            "command": 'Whisper,' + account_name+","+receiver_name.content+","+message_whisper.content
         }
 
         print(data)
-        await ctx.send("Sent whisper from: " + account_name + "to " + receiver_name + "!")
+        await ctx.send("Sent whisper from: " + account_name + "to " + receiver_name.content + "!")
 
         # result = requests.post(
         #     app_ws, json=data, headers=headers)
