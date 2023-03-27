@@ -15,13 +15,11 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 app_ws = 'https://expressjs-prisma-production-36b8.up.railway.app/commands/'
 app_accounts_ws = 'https://expressjs-prisma-production-36b8.up.railway.app/accounts'
 
+EMOJI_NUMBERS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
+
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
-
-@bot.command()
-async def ping(ctx):
-    await ctx.send('pong')
 
 @bot.command()
 async def send(ctx):
@@ -45,20 +43,6 @@ async def send(ctx):
         print(
             f"Not sent with {result.status_code}, response:\n{result.json()}")
         await ctx.send("Failed retrieving command!")
-
-# @bot.command()
-# async def online(ctx):
-#     # send get request to app_accounts_ws
-#     result = requests.get(app_accounts_ws)
-#     msg = ''
-#     # iterate over result and add to msg the account and lastseen fields
-#     for account in result.json():
-#         lastseen = account['lastseen']
-#         datetime_object = datetime.strptime(lastseen, "%Y-%m-%dT%H:%M:%S.%fZ")
-#         beauty_date = datetime_object.strftime("%B %d, %Y %I:%M %p")
-#         msg += f"{account['account']} was last seen on {beauty_date}\n"
-
-#     await ctx.send(msg)
 
 @bot.command(name='start')
 async def start_command(ctx):
@@ -85,14 +69,37 @@ async def start_command(ctx):
             await ctx.send('You chose Whisper!')
         elif str(reaction.emoji) == '💻':  # "Online" option
             msg = await check_online()
-            print(msg)
             await ctx.send(msg)
 
 async def handle_quit(ctx):
     # Make a GET request to fetch options
     result = requests.get(app_accounts_ws)
+    data = result.json()
+
     # Send the new message with options
-    await ctx.send('Choose an account:', embed=create_accounts_embed(result.json()))
+    sent_message = await ctx.send('Choose an account:', embed=create_accounts_embed(data))
+    
+    # Add number emojis as reactions
+    for i in range(min(len(data), len(EMOJI_NUMBERS))):
+        await sent_message.add_reaction(EMOJI_NUMBERS[i])
+
+    # Create a check function to filter reactions
+    def reaction_check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) in EMOJI_NUMBERS[:min(len(data), len(EMOJI_NUMBERS))]
+
+    # Wait for a reaction matching the check function
+    try:
+        reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=reaction_check)
+    except asyncio.TimeoutError:
+        await ctx.send('You did not make a selection in time.')
+    else:
+        # Get the account corresponding to the selected emoji
+        account_index = EMOJI_NUMBERS.index(str(reaction.emoji))
+        selected_account = data[account_index]
+
+        # Respond with the selected account
+        await ctx.send(f'You selected account {selected_account} ({selected_account["account"]})')
+
 
 async def check_online():
     msg = ''
