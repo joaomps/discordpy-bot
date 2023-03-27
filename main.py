@@ -45,19 +45,19 @@ async def send(ctx):
             f"Not sent with {result.status_code}, response:\n{result.json()}")
         await ctx.send("Failed retrieving command!")
 
-@bot.command()
-async def online(ctx):
-    # send get request to app_accounts_ws
-    result = requests.get(app_accounts_ws)
-    msg = ''
-    # iterate over result and add to msg the account and lastseen fields
-    for account in result.json():
-        lastseen = account['lastseen']
-        datetime_object = datetime.strptime(lastseen, "%Y-%m-%dT%H:%M:%S.%fZ")
-        beauty_date = datetime_object.strftime("%B %d, %Y %I:%M %p")
-        msg += f"{account['account']} was last seen on {beauty_date}\n"
+# @bot.command()
+# async def online(ctx):
+#     # send get request to app_accounts_ws
+#     result = requests.get(app_accounts_ws)
+#     msg = ''
+#     # iterate over result and add to msg the account and lastseen fields
+#     for account in result.json():
+#         lastseen = account['lastseen']
+#         datetime_object = datetime.strptime(lastseen, "%Y-%m-%dT%H:%M:%S.%fZ")
+#         beauty_date = datetime_object.strftime("%B %d, %Y %I:%M %p")
+#         msg += f"{account['account']} was last seen on {beauty_date}\n"
 
-    await ctx.send(msg)
+#     await ctx.send(msg)
 
 @bot.command(name='start')
 async def start_command(ctx):
@@ -83,7 +83,21 @@ async def start_command(ctx):
         elif str(reaction.emoji) == '🗣️':  # "Whisper" option
             await ctx.send('You chose Whisper!')
         elif str(reaction.emoji) == '💻':  # "Online" option
-            await ctx.send('You chose Online!')
+            msg = await check_online(ctx)
+            await ctx.send(msg)
+
+def check_online():
+    msg = ''
+    # send get request to app_accounts_ws
+    result = requests.get(app_accounts_ws)
+    # iterate over result and add to msg the account and lastseen fields
+    for account in result.json():
+        lastseen = account['lastseen']
+        datetime_object = datetime.strptime(lastseen, "%Y-%m-%dT%H:%M:%S.%fZ")
+        beauty_date = datetime_object.strftime("%B %d, %Y %I:%M %p")
+        msg += f"{account['account']} was last seen on {beauty_date}\n"
+
+    return msg
 
 def create_options_embed():
     embed = discord.Embed(title='Options:', description='React to make your choice:', color=discord.Color.green())
