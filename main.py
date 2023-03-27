@@ -83,7 +83,7 @@ async def start_command(ctx):
         elif str(reaction.emoji) == '🗣️':  # "Whisper" option
             await ctx.send('You chose Whisper!')
         elif str(reaction.emoji) == '💻':  # "Online" option
-            msg = await check_online(ctx)
+            msg = await check_online()
             await ctx.send(msg)
 
 def check_online():
@@ -100,7 +100,7 @@ def check_online():
     return msg
 
 def create_options_embed():
-    embed = discord.Embed(title='Options:', description='React to make your choice:', color=discord.Color.green())
+    embed = discord.Embed(title='Commands:', description='React to make your choice:', color=discord.Color.green())
     embed.add_field(name='Quit', value='🛑', inline=True)
     embed.add_field(name='Whisper', value='🗣️', inline=True)
     embed.add_field(name='Online', value='💻', inline=True)
