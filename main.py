@@ -1,5 +1,6 @@
 # This example requires the 'message_content' privileged intents
 
+import json
 import os
 import requests
 from datetime import datetime
@@ -79,14 +80,21 @@ async def start_command(ctx):
     else:
         # Respond based on which option was chosen
         if str(reaction.emoji) == '🛑':  # "Quit" option
-            await ctx.send('You chose Quit!')
+            await handle_quit(ctx)
         elif str(reaction.emoji) == '🗣️':  # "Whisper" option
             await ctx.send('You chose Whisper!')
         elif str(reaction.emoji) == '💻':  # "Online" option
-            msg = await check_online()
+            msg = check_online()
             await ctx.send(msg)
 
-def check_online():
+async def handle_quit(ctx):
+    # Make a GET request to fetch options
+    result = requests.get(app_accounts_ws)
+    # Send the new message with options
+    await ctx.send('Choose an account:', embed=create_accounts_embed(result.json()))
+
+
+async def check_online():
     msg = ''
     # send get request to app_accounts_ws
     result = requests.get(app_accounts_ws)
@@ -104,6 +112,16 @@ def create_options_embed():
     embed.add_field(name='Quit', value='🛑', inline=True)
     embed.add_field(name='Whisper', value='🗣️', inline=True)
     embed.add_field(name='Online', value='💻', inline=True)
+    return embed
+
+def create_accounts_embed(data):
+    embed = discord.Embed(title='Accounts:', description='React to make your choice:', color=discord.Color.green())
+
+    index = 1
+    for account in data:
+        embed.add_field(name=account['account'], value=index, inline=True)
+        index = index + 1
+
     return embed
 
 bot.run(os.environ["DISCORD_TOKEN"])
