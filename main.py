@@ -48,7 +48,8 @@ async def start_command(ctx):
     await sent_message.add_reaction("🛑")  # Reaction for "Quit"
     await sent_message.add_reaction("🗣️")  # Reaction for "Whisper"
     await sent_message.add_reaction("💻")  # Reaction for "Online"
-
+    await sent_message.add_reaction("📷")  # Reaction for "Screenshot"
+    
     # Create a check function to filter reactions
     def reaction_check(reaction, user):
         return user == ctx.author and str(reaction.emoji) in ["🛑", "🗣️", "💻"]
