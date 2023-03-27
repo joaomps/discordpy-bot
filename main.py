@@ -69,11 +69,73 @@ async def start_command(ctx):
         if str(reaction.emoji) == '🛑':  # "Quit" option
             await handle_quit(ctx)
         elif str(reaction.emoji) == '🗣️':  # "Whisper" option
-            await ctx.send('You chose Whisper!')
+            await handle_whisper(ctx)
         elif str(reaction.emoji) == '💻':  # "Online" option
             msg = await check_online()
             await ctx.send(msg)
 
+async def handle_whisper(ctx):
+    # Make a GET request to fetch options
+    result = requests.get(app_accounts_ws)
+    data = result.json()
+
+    # Send the new message with options
+    sent_message = await ctx.send('Choose an account:', embed=create_accounts_embed(data))
+    
+    # Add number emojis as reactions
+    for i in range(min(len(data), len(EMOJI_NUMBERS))):
+        await sent_message.add_reaction(EMOJI_NUMBERS[i])
+
+    # Create a check function to filter reactions
+    def reaction_check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) in EMOJI_NUMBERS[:min(len(data), len(EMOJI_NUMBERS))]
+
+    # Wait for a reaction matching the check function
+    try:
+        reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=reaction_check)
+    except asyncio.TimeoutError:
+        await ctx.send('You did not make a selection in time.')
+    else:
+        # Get the account corresponding to the selected emoji
+        account_index = EMOJI_NUMBERS.index(str(reaction.emoji))
+        selected_account = data[account_index]
+        account_name = selected_account["account"]
+        receiver_name = ''
+        message_whisper = ''
+
+        # await response for who to whisper and what message
+        await ctx.send('Please enter the name of the receiver:')
+        try:
+            receiver_name = await bot.wait_for('message', timeout=30.0, check=lambda m: m.author == ctx.author)
+        except asyncio.TimeoutError:
+            await ctx.send('You did not enter a receiver name in time.')
+            return
+        await ctx.send('Please enter the message:')
+        try:
+            message_whisper = await bot.wait_for('message', timeout=30.0, check=lambda m: m.author == ctx.author)
+        except asyncio.TimeoutError:
+            await ctx.send('You did not enter a message in time.')
+            return
+
+        data = {
+            "command": 'Whisper,' + account_name+","+receiver_name+","+message_whisper.content
+        }
+
+        print(data)
+        await ctx.send("Sent whisper from: " + account_name + "to " + receiver_name + "!")
+
+        # result = requests.post(
+        #     app_ws, json=data, headers=headers)
+
+        # if 200 <= result.status_code < 300:
+        #     print(f"Webhook sent {result.status_code}")
+        #     await ctx.send("Sent whisper from: " + account_name + "to " + receiver_name + "!")
+        # else:
+        #     print(
+        #         f"Not sent with {result.status_code}, response:\n{result.json()}")
+        #     await ctx.send("Failed sending whisper command!")
+            
+            
 async def handle_quit(ctx):
     # Make a GET request to fetch options
     result = requests.get(app_accounts_ws)
@@ -128,7 +190,6 @@ async def check_online():
         beauty_date = datetime_object.strftime("%B %d, %Y %I:%M %p")
         msg += f"{account['account']} was last seen on {beauty_date}\n"
 
-    print("Completed check_online")
     return msg
 
 def create_options_embed():
