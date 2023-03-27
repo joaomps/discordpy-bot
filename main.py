@@ -84,7 +84,8 @@ async def start_command(ctx):
         elif str(reaction.emoji) == '🗣️':  # "Whisper" option
             await ctx.send('You chose Whisper!')
         elif str(reaction.emoji) == '💻':  # "Online" option
-            msg = check_online()
+            msg = ''
+            await check_online(msg)
             await ctx.send(msg)
 
 async def handle_quit(ctx):
@@ -94,8 +95,7 @@ async def handle_quit(ctx):
     await ctx.send('Choose an account:', embed=create_accounts_embed(result.json()))
 
 
-async def check_online():
-    msg = ''
+async def check_online(msg):
     # send get request to app_accounts_ws
     result = requests.get(app_accounts_ws)
     # iterate over result and add to msg the account and lastseen fields
