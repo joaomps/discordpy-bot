@@ -126,7 +126,7 @@ async def handle_whisper(ctx):
 
         if 200 <= result.status_code < 300:
             print(f"Webhook sent {result.status_code}")
-            await ctx.send("Sent whisper from: " + account_name + "to " + receiver_name.content + "!")
+            await ctx.send("Sent whisper from: " + account_name + " to " + receiver_name.content + "!")
         else:
             print(
                 f"Not sent with {result.status_code}, response:\n{result.json()}")
@@ -203,14 +203,7 @@ def create_accounts_embed(data):
     for i, account in enumerate(data):
         if i >= len(EMOJI_NUMBERS):
             break
-        value = f'Account: {account["account"]}'
-        embed.add_field(name=f'{EMOJI_NUMBERS[i]} {account["account"]}', value=value, inline=True)
-
-
-    # index = 1
-    # for account in data:
-    #     embed.add_field(name=account['account'], value=index, inline=True)
-    #     index = index + 1
+        embed.add_field(name=f'{EMOJI_NUMBERS[i]} {account["account"]}', inline=True)
 
     return embed
 
