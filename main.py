@@ -5,8 +5,7 @@ import requests
 from datetime import datetime
 import discord
 from discord.ext import commands
-
-client = discord.Client()
+import asyncio
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -60,30 +59,31 @@ async def online(ctx):
 
     await ctx.send(msg)
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+@bot.command(name='start')
+async def start_command(ctx):
+    # Send the initial message with options and add reactions
+    sent_message = await ctx.send('Choose an option:', embed=create_options_embed())
+    await sent_message.add_reaction('🛑')   # Reaction for "Quit"
+    await sent_message.add_reaction('🗣️')  # Reaction for "Whisper"
+    await sent_message.add_reaction('💻')   # Reaction for "Online"
 
-    if message.content == '!start':
-        sent_message = await message.channel.send('Choose an option:', embed=create_options_embed())
-        await sent_message.add_reaction('🛑')   # Reaction for "Quit"
-        await sent_message.add_reaction('🗣️')  # Reaction for "Whisper"
-        await sent_message.add_reaction('💻')   # Reaction for "Online"
+    # Create a check function to filter reactions
+    def reaction_check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) in ['🛑', '🗣️', '💻']
 
-@client.event
-async def on_reaction_add(reaction, user):
-    if user == client.user:
-        return
-
-    if str(reaction.emoji) == '🛑':  # "Quit" option
-        await reaction.message.channel.send('You chose Quit!')
-
-    elif str(reaction.emoji) == '🗣️':  # "Whisper" option
-        await reaction.message.channel.send('You chose Whisper!')
-
-    elif str(reaction.emoji) == '💻':  # "Online" option
-        await reaction.message.channel.send('You chose Online!')
+    # Wait for a reaction matching the check function
+    try:
+        reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=reaction_check)
+    except asyncio.TimeoutError:
+        await ctx.send('You did not make a selection in time.')
+    else:
+        # Respond based on which option was chosen
+        if str(reaction.emoji) == '🛑':  # "Quit" option
+            await ctx.send('You chose Quit!')
+        elif str(reaction.emoji) == '🗣️':  # "Whisper" option
+            await ctx.send('You chose Whisper!')
+        elif str(reaction.emoji) == '💻':  # "Online" option
+            await ctx.send('You chose Online!')
 
 def create_options_embed():
     embed = discord.Embed(title='Options:', description='React to make your choice:', color=discord.Color.green())
@@ -92,5 +92,4 @@ def create_options_embed():
     embed.add_field(name='Online', value='💻', inline=True)
     return embed
 
-client.run(os.environ["DISCORD_TOKEN"])
 bot.run(os.environ["DISCORD_TOKEN"])
