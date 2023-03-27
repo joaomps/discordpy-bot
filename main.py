@@ -6,6 +6,8 @@ from datetime import datetime
 import discord
 from discord.ext import commands
 
+client = discord.Client()
+
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -58,4 +60,37 @@ async def online(ctx):
 
     await ctx.send(msg)
 
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    if message.content == '!start':
+        sent_message = await message.channel.send('Choose an option:', embed=create_options_embed())
+        await sent_message.add_reaction('🛑')   # Reaction for "Quit"
+        await sent_message.add_reaction('🗣️')  # Reaction for "Whisper"
+        await sent_message.add_reaction('💻')   # Reaction for "Online"
+
+@client.event
+async def on_reaction_add(reaction, user):
+    if user == client.user:
+        return
+
+    if str(reaction.emoji) == '🛑':  # "Quit" option
+        await reaction.message.channel.send('You chose Quit!')
+
+    elif str(reaction.emoji) == '🗣️':  # "Whisper" option
+        await reaction.message.channel.send('You chose Whisper!')
+
+    elif str(reaction.emoji) == '💻':  # "Online" option
+        await reaction.message.channel.send('You chose Online!')
+
+def create_options_embed():
+    embed = discord.Embed(title='Options:', description='React to make your choice:', color=discord.Color.green())
+    embed.add_field(name='Quit', value='🛑', inline=True)
+    embed.add_field(name='Whisper', value='🗣️', inline=True)
+    embed.add_field(name='Online', value='💻', inline=True)
+    return embed
+
+client.run(os.environ["DISCORD_TOKEN"])
 bot.run(os.environ["DISCORD_TOKEN"])
