@@ -19,11 +19,9 @@ headers = {"Content-Type": "application/json"}
 
 EMOJI_NUMBERS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 
-
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
-
 
 @bot.command()
 async def send(ctx):
@@ -42,7 +40,6 @@ async def send(ctx):
     else:
         print(f"Not sent with {result.status_code}, response:\n{result.json()}")
         await ctx.send("Failed retrieving command!")
-
 
 @bot.command(name="start")
 async def start_command(ctx):
@@ -72,7 +69,56 @@ async def start_command(ctx):
         elif str(reaction.emoji) == "💻":  # "Online" option
             msg = await check_online()
             await ctx.send(msg)
+        elif str(reaction.emoji) == "📷": # Screenshot option
+            await handle_screenshot(ctx)
 
+async def handle_screenshot(ctx):
+   # Make a GET request to fetch options
+    result = requests.get(app_accounts_ws)
+    data = result.json()
+
+    # Send the new message with options
+    sent_message = await ctx.send(
+        "Choose an account:", embed=create_accounts_embed(data)
+    )
+
+    # Add number emojis as reactions
+    for i in range(min(len(data), len(EMOJI_NUMBERS))):
+        await sent_message.add_reaction(EMOJI_NUMBERS[i])
+
+    # Create a check function to filter reactions
+    def reaction_check(reaction, user):
+        return (
+            user == ctx.author
+            and str(reaction.emoji)
+            in EMOJI_NUMBERS[: min(len(data), len(EMOJI_NUMBERS))]
+        )
+
+    # Wait for a reaction matching the check function
+    try:
+        reaction, user = await bot.wait_for(
+            "reaction_add", timeout=30.0, check=reaction_check
+        )
+    except asyncio.TimeoutError:
+        await ctx.send("You did not make a selection in time.")
+    else:
+        # Get the account corresponding to the selected emoji
+        account_index = EMOJI_NUMBERS.index(str(reaction.emoji))
+        selected_account = data[account_index]
+        account_name = selected_account["account"]
+
+        data = {
+            "command": "Screenshot," + account_name,
+        }
+
+        result = requests.post(app_ws, json=data, headers=headers)
+
+        if 200 <= result.status_code < 300:
+            print(f"Webhook sent {result.status_code}")
+            await ctx.send("Sent screenshot command to: " + account_name + "!")
+        else:
+            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+            await ctx.send("Failed sending screenshot command!") 
 
 async def handle_whisper(ctx):
     # Make a GET request to fetch options
@@ -153,7 +199,6 @@ async def handle_whisper(ctx):
             print(f"Not sent with {result.status_code}, response:\n{result.json()}")
             await ctx.send("Failed sending whisper command!")
 
-
 async def handle_quit(ctx):
     # Make a GET request to fetch options
     result = requests.get(app_accounts_ws)
@@ -202,7 +247,6 @@ async def handle_quit(ctx):
             print(f"Not sent with {result.status_code}, response:\n{result.json()}")
             await ctx.send("Failed sending quit command!")
 
-
 async def check_online():
     msg = ""
     # send get request to app_accounts_ws
@@ -216,7 +260,6 @@ async def check_online():
 
     return msg
 
-
 def create_options_embed():
     embed = discord.Embed(
         title="Commands:",
@@ -226,8 +269,9 @@ def create_options_embed():
     embed.add_field(name="Quit", value="🛑", inline=True)
     embed.add_field(name="Whisper", value="🗣️", inline=True)
     embed.add_field(name="Online", value="💻", inline=True)
-    return embed
+    embed.add_field(name='Screenshot', value='📷', inline=True)
 
+    return embed
 
 def create_accounts_embed(data):
 
@@ -245,6 +289,5 @@ def create_accounts_embed(data):
         )
 
     return embed
-
 
 bot.run(os.environ["DISCORD_TOKEN"])
