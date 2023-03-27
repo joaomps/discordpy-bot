@@ -15,6 +15,10 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 app_ws = 'https://expressjs-prisma-production-36b8.up.railway.app/commands/'
 app_accounts_ws = 'https://expressjs-prisma-production-36b8.up.railway.app/accounts'
 
+headers = {
+            "Content-Type": "application/json"
+        }
+
 EMOJI_NUMBERS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
 
 @bot.event
@@ -38,7 +42,6 @@ async def send(ctx):
     if 200 <= result.status_code < 300:
         print(f"Webhook sent {result.status_code}")
         await ctx.send("Command retrieved!")
-
     else:
         print(
             f"Not sent with {result.status_code}, response:\n{result.json()}")
@@ -96,9 +99,22 @@ async def handle_quit(ctx):
         # Get the account corresponding to the selected emoji
         account_index = EMOJI_NUMBERS.index(str(reaction.emoji))
         selected_account = data[account_index]
+        account_name = selected_account["account"]
 
-        # Respond with the selected account
-        await ctx.send(f'You selected account {selected_account} ({selected_account["account"]})')
+        data = {
+                "command": 'Quit,' + account_name,
+        }
+
+        result = requests.post(
+            app_ws, json=data, headers=headers)
+
+        if 200 <= result.status_code < 300:
+            print(f"Webhook sent {result.status_code}")
+            await ctx.send("Sent quit command to: " + account_name + "!")
+        else:
+            print(
+                f"Not sent with {result.status_code}, response:\n{result.json()}")
+            await ctx.send("Failed sending quit command!")
 
 
 async def check_online():
