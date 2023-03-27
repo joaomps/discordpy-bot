@@ -94,7 +94,6 @@ async def handle_quit(ctx):
     # Send the new message with options
     await ctx.send('Choose an account:', embed=create_accounts_embed(result.json()))
 
-
 async def check_online(msg):
     # send get request to app_accounts_ws
     result = requests.get(app_accounts_ws)
@@ -105,6 +104,7 @@ async def check_online(msg):
         beauty_date = datetime_object.strftime("%B %d, %Y %I:%M %p")
         msg += f"{account['account']} was last seen on {beauty_date}\n"
 
+    print(msg)
     return msg
 
 def create_options_embed():
