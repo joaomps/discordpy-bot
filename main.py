@@ -121,19 +121,16 @@ async def handle_whisper(ctx):
             "command": 'Whisper,' + account_name+","+receiver_name.content+","+message_whisper.content
         }
 
-        print(data)
-        await ctx.send("Sent whisper from: " + account_name + "to " + receiver_name.content + "!")
+        result = requests.post(
+            app_ws, json=data, headers=headers)
 
-        # result = requests.post(
-        #     app_ws, json=data, headers=headers)
-
-        # if 200 <= result.status_code < 300:
-        #     print(f"Webhook sent {result.status_code}")
-        #     await ctx.send("Sent whisper from: " + account_name + "to " + receiver_name + "!")
-        # else:
-        #     print(
-        #         f"Not sent with {result.status_code}, response:\n{result.json()}")
-        #     await ctx.send("Failed sending whisper command!")
+        if 200 <= result.status_code < 300:
+            print(f"Webhook sent {result.status_code}")
+            await ctx.send("Sent whisper from: " + account_name + "to " + receiver_name.content + "!")
+        else:
+            print(
+                f"Not sent with {result.status_code}, response:\n{result.json()}")
+            await ctx.send("Failed sending whisper command!")
             
             
 async def handle_quit(ctx):
@@ -200,12 +197,20 @@ def create_options_embed():
     return embed
 
 def create_accounts_embed(data):
+    
     embed = discord.Embed(title='Accounts:', description='React to make your choice:', color=discord.Color.green())
 
-    index = 1
-    for account in data:
-        embed.add_field(name=account['account'], value=index, inline=True)
-        index = index + 1
+    for i, account in enumerate(data):
+        if i >= len(EMOJI_NUMBERS):
+            break
+        value = f'Account: {account["account"]}'
+        embed.add_field(name=f'{EMOJI_NUMBERS[i]} {account["account"]}', value=value, inline=True)
+
+
+    # index = 1
+    # for account in data:
+    #     embed.add_field(name=account['account'], value=index, inline=True)
+    #     index = index + 1
 
     return embed
 
