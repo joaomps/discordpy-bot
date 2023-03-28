@@ -82,7 +82,7 @@ async def run_command(ctx):
         data = {
             "job": {
                 "accounttorun": selected_account['accountname'],
-                "pathtorun": selected_account['pathttorun'],
+                "pathtorun": selected_account['pathtorun'],
                 "devicename": selected_account['devicename']
             }
         }
