@@ -13,7 +13,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 app_ws = "https://expressjs-prisma-production-36b8.up.railway.app/commands/"
-app_createjob_ws = "https://expressjs-prisma-production-36b8.up.railway.app/commands/"
+app_createjob_ws = "https://expressjs-prisma-production-36b8.up.railway.app/createjob/"
 app_accounts_ws = "https://expressjs-prisma-production-36b8.up.railway.app/accounts"
 available_accounts_ws = 'https://expressjs-prisma-production-36b8.up.railway.app/available-accounts'
 
