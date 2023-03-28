@@ -14,6 +14,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 app_ws = "https://expressjs-prisma-production-36b8.up.railway.app/commands/"
 app_accounts_ws = "https://expressjs-prisma-production-36b8.up.railway.app/accounts"
+available_accounts_ws = 'https://expressjs-prisma-production-36b8.up.railway.app/available-accounts'
 
 headers = {"Content-Type": "application/json"}
 
@@ -40,6 +41,57 @@ async def send(ctx):
     else:
         print(f"Not sent with {result.status_code}, response:\n{result.json()}")
         await ctx.send("Failed retrieving command!")
+
+@bot.command(name="run")
+async def run_command(ctx):
+    # Make a GET request to fetch options
+    result = requests.get(available_accounts_ws)
+    data = result.json()
+
+    # Send the new message with options
+    sent_message = await ctx.send(
+        "Choose an account to start:", embed=create_available_accounts_embed(data)
+    )
+
+    # Add number emojis as reactions
+    for i in range(min(len(data), len(EMOJI_NUMBERS))):
+        await sent_message.add_reaction(EMOJI_NUMBERS[i])
+
+    # Create a check function to filter reactions
+    def reaction_check(reaction, user):
+        return (
+            user == ctx.author
+            and str(reaction.emoji)
+            in EMOJI_NUMBERS[: min(len(data), len(EMOJI_NUMBERS))]
+        )
+
+    # Wait for a reaction matching the check function
+    try:
+        reaction, user = await bot.wait_for(
+            "reaction_add", timeout=30.0, check=reaction_check
+        )
+    except asyncio.TimeoutError:
+        await ctx.send("You did not make a selection in time.")
+    else:
+        # Get the account corresponding to the selected emoji
+        account_index = EMOJI_NUMBERS.index(str(reaction.emoji))
+        selected_account = data[account_index]
+        print("chose:" + selected_account)
+        # account_name = selected_account["account"]
+
+        # data = {
+        #     "command": "Screenshot," + account_name,
+        # }
+
+        # result = requests.post(app_ws, json=data, headers=headers)
+
+        # if 200 <= result.status_code < 300:
+        #     print(f"Webhook sent {result.status_code}")
+        #     await ctx.send("Sent screenshot command to: " + account_name + "!")
+        # else:
+        #     print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+        #     await ctx.send("Failed sending screenshot command!") 
+
 
 @bot.command(name="start")
 async def start_command(ctx):
@@ -287,6 +339,23 @@ def create_accounts_embed(data):
             break
         embed.add_field(
             name=f'{EMOJI_NUMBERS[i]} {account["account"]}', value="\u200b", inline=True
+        )
+
+    return embed
+
+def create_available_accounts_embed(data):
+
+    embed = discord.Embed(
+        title="Accounts:",
+        description="React to make your choice:",
+        color=discord.Color.green(),
+    )
+
+    for i, account in enumerate(data):
+        if i >= len(EMOJI_NUMBERS):
+            break
+        embed.add_field(
+            name=f'{EMOJI_NUMBERS[i]} {account["accountname"]}', value="\u200b", inline=True
         )
 
     return embed
