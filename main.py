@@ -13,6 +13,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 app_ws = "https://expressjs-prisma-production-36b8.up.railway.app/commands/"
+app_createjob_ws = "https://expressjs-prisma-production-36b8.up.railway.app/commands/"
 app_accounts_ws = "https://expressjs-prisma-production-36b8.up.railway.app/accounts"
 available_accounts_ws = 'https://expressjs-prisma-production-36b8.up.railway.app/available-accounts'
 
@@ -77,21 +78,23 @@ async def run_command(ctx):
         account_index = EMOJI_NUMBERS.index(str(reaction.emoji))
         selected_account = data[account_index]
         print(selected_account)
-        print("chose:" + selected_account['accountname'] + " " + selected_account['pathtorun'])
-        # account_name = selected_account["account"]
 
-        # data = {
-        #     "command": "Screenshot," + account_name,
-        # }
+        data = {
+            "job": {
+                "accounttorun": selected_account['accountname'],
+                "pathtorun": selected_account['pathttorun'],
+                "devicename": selected_account['devicename']
+            }
+        }
 
-        # result = requests.post(app_ws, json=data, headers=headers)
+        result = requests.post(app_createjob_ws, json=data, headers=headers)
 
-        # if 200 <= result.status_code < 300:
-        #     print(f"Webhook sent {result.status_code}")
-        #     await ctx.send("Sent screenshot command to: " + account_name + "!")
-        # else:
-        #     print(f"Not sent with {result.status_code}, response:\n{result.json()}")
-        #     await ctx.send("Failed sending screenshot command!") 
+        if 200 <= result.status_code < 300:
+            print(f"Webhook sent {result.status_code}")
+            await ctx.send("Sent run command to: " + selected_account['accountname'] + "!")
+        else:
+            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+            await ctx.send("Failed sending run command!") 
 
 
 @bot.command(name="start")
@@ -356,7 +359,7 @@ def create_available_accounts_embed(data):
         if i >= len(EMOJI_NUMBERS):
             break
         embed.add_field(
-            name=f'{EMOJI_NUMBERS[i]} {account["accountname"]}', value="\u200b", inline=True
+            name=f'{EMOJI_NUMBERS[i]} {account["accountname"]}', value=f"Device: {account['devicename']}\n\u200b", inline=True
         )
 
     return embed
