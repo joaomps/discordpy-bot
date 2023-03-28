@@ -76,7 +76,8 @@ async def run_command(ctx):
         # Get the account corresponding to the selected emoji
         account_index = EMOJI_NUMBERS.index(str(reaction.emoji))
         selected_account = data[account_index]
-        print("chose:" + selected_account['accountname'] + " " + selected_account['pathtorun'] + " " + selected_account['devicename'])
+        print(selected_account)
+        print("chose:" + selected_account['accountname'] + " " + selected_account['pathtorun'])
         # account_name = selected_account["account"]
 
         # data = {
