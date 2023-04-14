@@ -25,6 +25,43 @@ EMOJI_NUMBERS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣
 async def on_ready():
     print(f"Logged in as {bot.user}")
 
+@bot.event
+async def on_message(message):
+    # Ignore messages sent by the bot itself
+    if message.author == bot.user:
+        return
+
+    # Check for embedded content with title "Whisper"
+    if message.embeds:
+        for embed in message.embeds:
+            if embed.title == "Whisper":
+                await handle_whisper_embed(message, embed)
+
+    # Continue processing commands
+    await bot.process_commands(message)
+
+async def handle_whisper_embed(message, embed):
+    # Your logic to handle the whisper embed goes here
+    # For example, you can send a message to the same channel
+    message_field = None
+    sender_name_field = None
+
+    # Look for the fields with the names "Message" and "Sender Name"
+    for field in embed.fields:
+        if field.name == "Message":
+            message_field = field
+        elif field.name == "Sender Name":
+            sender_name_field = field
+
+        if message_field and sender_name_field:  # Exit the loop if both fields are found
+            break
+
+    if message_field and sender_name_field:
+        await message.channel.send("Found a Whisper: " + message_field.value + " from " + sender_name_field.value) 
+    # Else, say nothing
+
+    
+
 @bot.command()
 async def send(ctx):
     # send post to disc_notifications with the account and minutes_passed
@@ -95,7 +132,6 @@ async def run_command(ctx):
         else:
             print(f"Not sent with {result.status_code}, response:\n{result.json()}")
             await ctx.send("Failed sending run command!") 
-
 
 @bot.command(name="start")
 async def start_command(ctx):
