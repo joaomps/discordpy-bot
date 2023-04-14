@@ -7,6 +7,7 @@ from datetime import datetime
 import discord
 from discord.ext import commands
 import asyncio
+import openai
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -35,12 +36,12 @@ async def on_message(message):
     if message.embeds:
         for embed in message.embeds:
             if embed.title == "Whisper":
-                await handle_whisper_embed(message, embed)
+                await handle_whisper_embed(message, embed, message.author.name)
 
     # Continue processing commands
     await bot.process_commands(message)
 
-async def handle_whisper_embed(message, embed):
+async def handle_whisper_embed(message, embed, character_name):
     # Your logic to handle the whisper embed goes here
     # For example, you can send a message to the same channel
     message_field = None
@@ -57,10 +58,11 @@ async def handle_whisper_embed(message, embed):
             break
 
     if message_field and sender_name_field:
-        await message.channel.send("Found a Whisper: " + message_field.value + " from " + sender_name_field.value) 
-    # Else, say nothing
-
-    
+        #Logic for openai here
+        openai.api_key = "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"
+        prompt = "Your name is " + character_name + ". Without repeating the same response and in their language, respond in less than 125 characters without being too chatty. Act like a World of Warcraft player that prefers being left alone than having long conversations and dislikes joining any groups to play together. Do not mention “Bot”, “GMR”, “HWT”, “Tinkr”, “OpenAI”, “GPT”, “ChatGPT”, “AI language model” or anything that would leak that you are not human. Do not use commas, periods, hashtags or proper grammar to the following: " + message_field.value
+        response = openai.Completion.create(engine="gpt-3.5-turbo", prompt=prompt, max_tokens=100)
+        await message.channel.send("Replied with: " + response.choices[0].text) 
 
 @bot.command()
 async def send(ctx):

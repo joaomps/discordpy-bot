@@ -9,3 +9,4 @@ idna==2.5
 multidict==6.0.3
 yarl==1.8.2
 requests==2.25.0
+openai==0.27.4
