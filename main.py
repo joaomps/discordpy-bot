@@ -65,7 +65,7 @@ async def handle_whisper_embed(message, embed, character_name):
         #Logic for openai here
         openai.api_key = "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"
         prompt = message_field.value
-        response = openai.Completion.create(engine="davinci", prompt=prompt, max_tokens=100, model="text-davinci-002", chat_history=conversation_history)
+        response = openai.Completion.create(prompt=prompt, max_tokens=100, model="text-davinci-002", chat_history=conversation_history)
         await message.channel.send("Replied with: " + response.choices[0].text) 
 
 @bot.command()
