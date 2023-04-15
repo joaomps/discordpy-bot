@@ -64,8 +64,8 @@ async def handle_whisper_embed(message, embed, character_name):
     if message_field and sender_name_field:
         #Logic for openai here
         openai.api_key = "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"
-        prompt = message_field.value
-        response = openai.Completion.create(engine="davinci", prompt=prompt, max_tokens=100, chat_history=conversation_history)
+        prompt = conversation_history[0] + "\nUser: " + message_field.value + "\nAI:"
+        response = openai.Completion.create(engine="davinci", prompt=prompt, max_tokens=100)
         await message.channel.send("Replied with: " + response.choices[0].text) 
 
 @bot.command()
