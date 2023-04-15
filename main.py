@@ -67,6 +67,8 @@ async def handle_whisper_embed(message, embed, character_name):
         openai.api_key = "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"
         prompt = conversation_history[0] + message_field.value
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+        # remove all commas from completion.choices[0].message.content
+        msgToSend = completion.choices[0].message.content.replace(",", "")
 
         # sleep randomly for 4-9 seconds
         await asyncio.sleep(random.randint(4, 9))
@@ -77,7 +79,7 @@ async def handle_whisper_embed(message, embed, character_name):
             + ","
             + sender_name_field.value
             + ","
-            + completion.choices[0].message.content
+            + msgToSend
         }
 
         result = requests.post(app_ws, json=data, headers=headers)
