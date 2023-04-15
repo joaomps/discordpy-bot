@@ -49,7 +49,7 @@ async def handle_whisper_embed(message, embed, character_name):
     sender_name_field = None
 
     conversation_history = [
-        "Your name is " + character_name + ". Without repeating the same response and in their language, respond in less than 125 characters without being too chatty. Act like a World of Warcraft player that prefers being left alone than having long conversations and dislikes joining any groups to play together. Do not mention “Bot”, “GMR”, “HWT”, “Tinkr”, “OpenAI”, “GPT”, “ChatGPT”, “AI language model” or anything that would leak that you are not human. Do not use commas, periods, hashtags or proper grammar. Answer the following: ",
+        "Act like a World of Warcraft player that prefers being left alone than having long conversations and dislikes joining any groups to play together. Do not ask questions. Without repeating the same response and in their language, respond in less than 125 characters without being too chatty. Do not mention “Bot”, “GMR”, “HWT”, “Tinkr”, “OpenAI”, “GPT”, “ChatGPT”, “AI language model” or anything that would leak that you are not human. Do not use commas, periods, hashtags or proper grammar. Answer the following: ",
     ]
 
     # Look for the fields with the names "Message" and "Sender Name"
