@@ -67,15 +67,18 @@ async def handle_whisper_embed(message, embed, character_name):
         openai.api_key = "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"
         prompt = conversation_history[0] + message_field.value
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+        print(completion)  # Add this line
 
         # sleep randomly for 4-9 seconds
         await asyncio.sleep(random.randint(4, 9))
         
+        print(completion)  # Add this line
+
         data = {
             "command": "Whisper,"
             + character_name
             + ","
-            + sender_name_field
+            + sender_name_field.value
             + ","
             + completion.choices[0].message.content
         }
