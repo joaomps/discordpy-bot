@@ -48,7 +48,7 @@ async def handle_whisper_embed(message, embed, character_name):
     sender_name_field = None
 
     conversation_history = [
-        "User: " + "Your name is " + character_name + ". Without repeating the same response and in their language, respond in less than 125 characters without being too chatty. Act like a World of Warcraft player that prefers being left alone than having long conversations and dislikes joining any groups to play together. Do not mention “Bot”, “GMR”, “HWT”, “Tinkr”, “OpenAI”, “GPT”, “ChatGPT”, “AI language model” or anything that would leak that you are not human. Do not use commas, periods, hashtags or proper grammar. ",
+        "User: " + "Your name is " + character_name + ". Without repeating the same response and in their language, respond in less than 125 characters without being too chatty. Act like a World of Warcraft player that prefers being left alone than having long conversations and dislikes joining any groups to play together. Do not mention “Bot”, “GMR”, “HWT”, “Tinkr”, “OpenAI”, “GPT”, “ChatGPT”, “AI language model” or anything that would leak that you are not human. Do not use commas, periods, hashtags or proper grammar. Answer the following: ",
     ]
 
     # Look for the fields with the names "Message" and "Sender Name"
@@ -64,7 +64,7 @@ async def handle_whisper_embed(message, embed, character_name):
     if message_field and sender_name_field:
         #Logic for openai here
         openai.api_key = "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"
-        prompt = conversation_history[0] + "\nUser: " + message_field.value + "\nAI:"
+        prompt = conversation_history[0] + message_field.value
         response = openai.Completion.create(engine="davinci", prompt=prompt, max_tokens=100)
         await message.channel.send("Replied with: " + response.choices[0].text) 
 
