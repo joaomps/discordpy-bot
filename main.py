@@ -2,6 +2,7 @@
 
 import json
 import os
+import random
 import requests
 from datetime import datetime
 import discord
@@ -67,8 +68,25 @@ async def handle_whisper_embed(message, embed, character_name):
         prompt = conversation_history[0] + message_field.value
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
 
-        # response = openai.Completion.create(engine="davinci", prompt=prompt, max_tokens=100)
-        await message.channel.send("Replied with: " + completion.choices[0].message.content) 
+        # sleep randomly for 4-9 seconds
+        await asyncio.sleep(random.randint(4, 9))
+        
+        data = {
+            "command": "Whisper,"
+            + character_name
+            + ","
+            + sender_name_field
+            + ","
+            + completion.choices[0].message.content
+        }
+
+        result = requests.post(app_ws, json=data, headers=headers)
+        if 200 <= result.status_code < 300:
+            print(f"Webhook sent {result.status_code}")
+            await message.channel.send("Replied with: " + completion.choices[0].message.content) 
+        else:
+            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+            await message.channel.send("Could not send whisper reply from chatgpt!") 
 
 @bot.command()
 async def send(ctx):
