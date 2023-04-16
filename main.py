@@ -49,7 +49,7 @@ async def handle_whisper_embed(message, embed, character_name):
     sender_name_field = None
 
     conversation_history = [
-        "From now on you will act like a World of Warcraft player that prefers being left alone than having long conversations and dislikes joining any groups. Do not ask any questions. Without repeating the same response and in their language, respond in less than 125 characters without being too chatty. Do not mention “Bot”, “GMR”, “HWT”, “Tinkr”, “OpenAI”, “GPT”, “ChatGPT”, “AI language model” or anything that would let them know that you are not human. Do not use any commas, dots, periods, hashtags or proper grammar. Answer the following: ",
+        "From now on you will act like a World of Warcraft player that prefers being left alone than having long conversations and dislikes joining any groups. Do not ask any questions. Without repeating the same response and in their language, respond in less than 125 characters without being too chatty. Do not mention “Bot”, “GMR”, “HWT”, “Tinkr”, “OpenAI”, “GPT”, “ChatGPT”, “AI language model” or anything that would let them know that you are not human. Do not use any commas, dots, periods, hashtags or proper grammar. If there's no reason to reply, don't even answer. Answer the following: ",
     ]
 
     # Look for the fields with the names "Message" and "Sender Name"
@@ -72,23 +72,30 @@ async def handle_whisper_embed(message, embed, character_name):
 
         # sleep randomly for 4-9 seconds
         await asyncio.sleep(random.randint(4, 9))
+        
+        # if msgToSend to lowercase does not contain "no" and "response" and "needed"
+        if (
+            "no" not in msgToSend.lower()
+            and "response" not in msgToSend.lower()
+            and "needed" not in msgToSend.lower()
+        ):
+            data = {
+                "command": "Whisper,"
+                + character_name
+                + ","
+                + sender_name_field.value
+                + ","
+                + msgToSend
+            }
 
-        data = {
-            "command": "Whisper,"
-            + character_name
-            + ","
-            + sender_name_field.value
-            + ","
-            + msgToSend
-        }
-
-        result = requests.post(app_ws, json=data, headers=headers)
-        if 200 <= result.status_code < 300:
-            print(f"Webhook sent {result.status_code}")
-            await message.channel.send("Replied with: " + completion.choices[0].message.content) 
-        else:
-            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
-            await message.channel.send("Could not send whisper reply from chatgpt!") 
+            result = requests.post(app_ws, json=data, headers=headers)
+            if 200 <= result.status_code < 300:
+                print(f"Webhook sent {result.status_code}")
+            else:
+                print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+                await message.channel.send("Could not send whisper reply from chatgpt!") 
+        
+        await message.channel.send("Chatgpt answer: " + msgToSend) 
 
 @bot.command()
 async def send(ctx):
