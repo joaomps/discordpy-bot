@@ -66,9 +66,10 @@ async def handle_whisper_embed(message, embed, character_name):
         #Logic for openai here
         openai.api_key = "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"
         completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[
-            {"role": "system", "content": personality_prompt},
+            {"role": "system", "content": personality_prompt[0]},
             {"role": "user", "content": message_field.value},
             ])
+        print(completion.choices[0].message.content)
         # remove all commas from completion.choices[0].message.content
         msgToSend = completion.choices[0].message.content.replace(",", "")
 
