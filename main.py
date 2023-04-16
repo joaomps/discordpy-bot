@@ -75,30 +75,23 @@ async def handle_whisper_embed(message, embed, character_name):
 
         # sleep randomly for 4-9 seconds
         await asyncio.sleep(random.randint(4, 9))
-        
-        # if msgToSend to lowercase does not contain "no" and "response" and "needed"
-        if (
-            "no" not in msgToSend.lower()
-            and "response" not in msgToSend.lower()
-            and "needed" not in msgToSend.lower()
-        ):
-            data = {
-                "command": "Whisper,"
-                + character_name
-                + ","
-                + sender_name_field.value
-                + ","
-                + msgToSend
-            }
+                
+        data = {
+            "command": "Whisper,"
+            + character_name
+            + ","
+            + sender_name_field.value
+            + ","
+            + msgToSend
+        }
 
-            result = requests.post(app_ws, json=data, headers=headers)
-            if 200 <= result.status_code < 300:
-                print(f"Webhook sent {result.status_code}")
-            else:
-                print(f"Not sent with {result.status_code}, response:\n{result.json()}")
-                await message.channel.send("Could not send whisper reply from chatgpt!") 
-        
-        await message.channel.send("Chatgpt answer: " + msgToSend) 
+        result = requests.post(app_ws, json=data, headers=headers)
+        if 200 <= result.status_code < 300:
+            print(f"Webhook sent {result.status_code}")
+            await message.channel.send("Chatgpt answer: " + msgToSend) 
+        else:
+            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+            await message.channel.send("Could not send whisper reply from chatgpt!") 
 
 @bot.command()
 async def send(ctx):
