@@ -37,7 +37,7 @@ MAX_CONTEXT_QUESTIONS = 10
 
 past_conversations = {}
 #Logic for openai here
-openai.api_key = "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"
+openai.api_key = "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"
 model = "gpt-3.5-turbo"
 ## 
 
