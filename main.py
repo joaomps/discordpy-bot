@@ -100,23 +100,21 @@ async def handle_whisper_embed(message, embed, character_name):
 
         # add response to history for the user
         past_conversations[sender_name_field.value] = [(message_field.value, msg_to__send)]
-
-        await message.channel.send("Chatgpt answer: " + msg_to__send) 
         
-        # # sleep randomly for 4-9 seconds
-        # await asyncio.sleep(random.randint(4, 9))
+        # sleep randomly for 4-9 seconds
+        await asyncio.sleep(random.randint(4, 9))
                 
-        # data = {
-        #     "command": f"Whisper,{character_name},{sender_name_field.value},{msg_to__send}"
-        # }
+        data = {
+            "command": f"Whisper,{character_name},{sender_name_field.value},{msg_to__send}"
+        }
 
-        # result = requests.post(app_ws, json=data, headers=headers)
-        # if 200 <= result.status_code < 300:
-        #     print(f"Webhook sent {result.status_code}")
-        #     await message.channel.send("Chatgpt answer: " + msg_to__send) 
-        # else:
-        #     print(f"Not sent with {result.status_code}, response:\n{result.json()}")
-        #     await message.channel.send("Could not send whisper reply from chatgpt!") 
+        result = requests.post(app_ws, json=data, headers=headers)
+        if 200 <= result.status_code < 300:
+            print(f"Webhook sent {result.status_code}")
+            await message.channel.send("Chatgpt answer: " + msg_to__send) 
+        else:
+            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+            await message.channel.send("Could not send whisper reply from chatgpt!") 
 
 @bot.command()
 async def send(ctx):
