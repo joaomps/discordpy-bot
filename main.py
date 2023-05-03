@@ -23,6 +23,24 @@ headers = {"Content-Type": "application/json"}
 
 EMOJI_NUMBERS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 
+## OPEN AI CONFIG
+personality_prompt = [
+        "From now on you will act like a World of Warcraft player that prefers being left alone than having long conversations and dislikes joining any groups. Do not ask any questions. Without repeating the same response and in their language, respond in less than 125 characters without being too chatty. Do not mention “Bot”, “GMR”, “HWT”, “Tinkr”, “OpenAI”, “GPT”, “ChatGPT”, “AI language model” or anything that would let them know that you are not human. Do not use any commas, dots, periods, hashtags or proper grammar. If there's no reason to reply, don't even answer. You reply with brief, to-the-point answers with no elaboration.",
+    ]
+
+TEMPERATURE = 0.5
+MAX_TOKENS = 500
+FREQUENCY_PENALTY = 0
+PRESENCE_PENALTY = 0.6
+# limits how many questions we include in the prompt
+MAX_CONTEXT_QUESTIONS = 10
+
+past_conversations = {}
+#Logic for openai here
+openai.api_key = "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"
+model = "gpt-3.5-turbo"
+## 
+
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
@@ -48,10 +66,6 @@ async def handle_whisper_embed(message, embed, character_name):
     message_field = None
     sender_name_field = None
 
-    personality_prompt = [
-        "From now on you will act like a World of Warcraft player that prefers being left alone than having long conversations and dislikes joining any groups. Do not ask any questions. Without repeating the same response and in their language, respond in less than 125 characters without being too chatty. Do not mention “Bot”, “GMR”, “HWT”, “Tinkr”, “OpenAI”, “GPT”, “ChatGPT”, “AI language model” or anything that would let them know that you are not human. Do not use any commas, dots, periods, hashtags or proper grammar. If there's no reason to reply, don't even answer. You reply with brief, to-the-point answers with no elaboration.",
-    ]
-
     # Look for the fields with the names "Message" and "Sender Name"
     for field in embed.fields:
         if field.name == "Message":
@@ -63,35 +77,47 @@ async def handle_whisper_embed(message, embed, character_name):
             break
 
     if message_field and sender_name_field:
-        #Logic for openai here
-        openai.api_key = "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"
-        completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[
-            {"role": "system", "content": personality_prompt[0]},
-            {"role": "user", "content": message_field.value},
-            ])
-        print(completion.choices[0].message.content)
+        
+
+        messages = [
+            { "role": "system", "content": personality_prompt[0] },
+        ]
+
+        user_history = past_conversations.get(sender_name_field.value, [])
+
+        if len(user_history) > 0:
+            for question, answer in user_history[-MAX_CONTEXT_QUESTIONS:]:
+                messages.append({ "role": "user", "content": question })
+                messages.append({ "role": "assistant", "content": answer })
+
+        messages.append({"role": "user", "content": message_field.value})
+
+        print(messages)
+
+        completion = openai.ChatCompletion.create(model=model, messages=messages)
+        
         # remove all commas from completion.choices[0].message.content
-        msgToSend = completion.choices[0].message.content.replace(",", "")
+        msg_to__send = completion.choices[0].message.content.replace(",", "")
 
-        # sleep randomly for 4-9 seconds
-        await asyncio.sleep(random.randint(4, 9))
+        # add response to history for the user
+        past_conversations[sender_name_field.value] = [(message_field.value, msg_to__send)]
+
+        await message.channel.send("Chatgpt answer: " + msg_to__send) 
+        
+        # # sleep randomly for 4-9 seconds
+        # await asyncio.sleep(random.randint(4, 9))
                 
-        data = {
-            "command": "Whisper,"
-            + character_name
-            + ","
-            + sender_name_field.value
-            + ","
-            + msgToSend
-        }
+        # data = {
+        #     "command": f"Whisper,{character_name},{sender_name_field.value},{msg_to__send}"
+        # }
 
-        result = requests.post(app_ws, json=data, headers=headers)
-        if 200 <= result.status_code < 300:
-            print(f"Webhook sent {result.status_code}")
-            await message.channel.send("Chatgpt answer: " + msgToSend) 
-        else:
-            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
-            await message.channel.send("Could not send whisper reply from chatgpt!") 
+        # result = requests.post(app_ws, json=data, headers=headers)
+        # if 200 <= result.status_code < 300:
+        #     print(f"Webhook sent {result.status_code}")
+        #     await message.channel.send("Chatgpt answer: " + msg_to__send) 
+        # else:
+        #     print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+        #     await message.channel.send("Could not send whisper reply from chatgpt!") 
 
 @bot.command()
 async def send(ctx):
