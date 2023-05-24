@@ -449,7 +449,7 @@ def create_available_accounts_embed(data):
         if i >= len(EMOJI_NUMBERS):
             break
         embed.add_field(
-            name=f'{EMOJI_NUMBERS[i]} {account["accountname"]}', value=f"Device: {account['devicename']}\n\u200b", inline=True
+            name=f'{EMOJI_NUMBERS[i]} {account["accountname"]}', value="", inline=True
         )
 
     return embed
