@@ -23,7 +23,7 @@ headers = {"Content-Type": "application/json"}
 
 EMOJI_NUMBERS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 
-## OPEN AI CONFIG
+# OPEN AI CONFIG
 personality_prompt = [
     "From now on you will act like a World of Warcraft player that prefers being left alone than having long conversations and dislikes joining any groups. Do not ask any questions. Without repeating the same responses and in their language, respond in less than 125 characters without being too chatty. Do not mention “Bot”, “Baneto”, “GMR”, “HWT”, “Tinkr”, “OpenAI”, “GPT”, “ChatGPT”, “AI language model” or anything that would let them know that you are not human. Do not use any commas, dots, periods, hashtags or proper grammar. You reply with brief, to-the-point answers with no elaboration. Don't use any punctuation or uppercase characters.",
 ]
@@ -38,11 +38,13 @@ MAX_CONTEXT_QUESTIONS = 10
 past_conversations = {}
 openai.api_key = "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"
 model = "gpt-3.5-turbo"
-## 
+##
+
 
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
+
 
 @bot.event
 async def on_message(message):
@@ -51,13 +53,14 @@ async def on_message(message):
         return
 
     # Check for embedded content with title "Whisper"
-    if message.embeds:
-        for embed in message.embeds:
-            if embed.title == "Whisper":
-                await handle_whisper_embed(message, embed, message.author.name)
+    # if message.embeds:
+    #     for embed in message.embeds:
+    #         if embed.title == "Whisper":
+    #             await handle_whisper_embed(message, embed, message.author.name)
 
     # Continue processing commands
     await bot.process_commands(message)
+
 
 async def handle_whisper_embed(message, embed, character_name):
     # Your logic to handle the whisper embed goes here
@@ -76,34 +79,35 @@ async def handle_whisper_embed(message, embed, character_name):
             break
 
     if message_field and sender_name_field:
-        
 
         messages = [
-            { "role": "system", "content": personality_prompt[0] },
+            {"role": "system", "content": personality_prompt[0]},
         ]
 
         user_history = past_conversations.get(sender_name_field.value, [])
 
         if len(user_history) > 0:
             for question, answer in user_history[-MAX_CONTEXT_QUESTIONS:]:
-                messages.append({ "role": "user", "content": question })
-                messages.append({ "role": "assistant", "content": answer })
+                messages.append({"role": "user", "content": question})
+                messages.append({"role": "assistant", "content": answer})
 
         messages.append({"role": "user", "content": message_field.value})
 
         print(messages)
 
-        completion = openai.ChatCompletion.create(model=model, messages=messages)
-        
+        completion = openai.ChatCompletion.create(
+            model=model, messages=messages)
+
         # remove all commas from completion.choices[0].message.content
         msg_to__send = completion.choices[0].message.content.replace(",", "")
 
         # add response to history for the user
-        past_conversations[sender_name_field.value] = [(message_field.value, msg_to__send)]
-        
+        past_conversations[sender_name_field.value] = [
+            (message_field.value, msg_to__send)]
+
         # sleep randomly for 4-9 seconds
         await asyncio.sleep(random.randint(4, 9))
-                
+
         data = {
             "command": f"Whisper,{character_name},{sender_name_field.value},{msg_to__send}"
         }
@@ -111,10 +115,12 @@ async def handle_whisper_embed(message, embed, character_name):
         result = requests.post(app_ws, json=data, headers=headers)
         if 200 <= result.status_code < 300:
             print(f"Webhook sent {result.status_code}")
-            await message.channel.send("Chatgpt answer: " + msg_to__send) 
+            await message.channel.send("Chatgpt answer: " + msg_to__send)
         else:
-            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
-            await message.channel.send("Could not send whisper reply from chatgpt!") 
+            print(
+                f"Not sent with {result.status_code}, response:\n{result.json()}")
+            await message.channel.send("Could not send whisper reply from chatgpt!")
+
 
 @bot.command()
 async def send(ctx):
@@ -131,8 +137,10 @@ async def send(ctx):
         print(f"Webhook sent {result.status_code}")
         await ctx.send("Command retrieved!")
     else:
-        print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+        print(
+            f"Not sent with {result.status_code}, response:\n{result.json()}")
         await ctx.send("Failed retrieving command!")
+
 
 @bot.command(name="run")
 async def run_command(ctx):
@@ -184,8 +192,10 @@ async def run_command(ctx):
             print(f"Webhook sent {result.status_code}")
             await ctx.send("Sent run command to: " + selected_account['accountname'] + "!")
         else:
-            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
-            await ctx.send("Failed sending run command!") 
+            print(
+                f"Not sent with {result.status_code}, response:\n{result.json()}")
+            await ctx.send("Failed sending run command!")
+
 
 @bot.command(name="start")
 async def start_command(ctx):
@@ -216,8 +226,9 @@ async def start_command(ctx):
         elif str(reaction.emoji) == "💻":  # "Online" option
             msg = await check_online()
             await ctx.send(msg)
-        elif str(reaction.emoji) == "📷": # Screenshot option
+        elif str(reaction.emoji) == "📷":  # Screenshot option
             await handle_screenshot(ctx)
+
 
 async def handle_screenshot(ctx):
    # Make a GET request to fetch options
@@ -264,8 +275,10 @@ async def handle_screenshot(ctx):
             print(f"Webhook sent {result.status_code}")
             await ctx.send("Sent screenshot command to: " + account_name + "!")
         else:
-            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
-            await ctx.send("Failed sending screenshot command!") 
+            print(
+                f"Not sent with {result.status_code}, response:\n{result.json()}")
+            await ctx.send("Failed sending screenshot command!")
+
 
 async def handle_whisper(ctx):
     # Make a GET request to fetch options
@@ -343,8 +356,10 @@ async def handle_whisper(ctx):
                 + "!"
             )
         else:
-            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+            print(
+                f"Not sent with {result.status_code}, response:\n{result.json()}")
             await ctx.send("Failed sending whisper command!")
+
 
 async def handle_quit(ctx):
     # Make a GET request to fetch options
@@ -391,8 +406,10 @@ async def handle_quit(ctx):
             print(f"Webhook sent {result.status_code}")
             await ctx.send("Sent quit command to: " + account_name + "!")
         else:
-            print(f"Not sent with {result.status_code}, response:\n{result.json()}")
+            print(
+                f"Not sent with {result.status_code}, response:\n{result.json()}")
             await ctx.send("Failed sending quit command!")
+
 
 async def check_online():
     msg = ""
@@ -407,6 +424,7 @@ async def check_online():
 
     return msg
 
+
 def create_options_embed():
     embed = discord.Embed(
         title="Commands:",
@@ -419,6 +437,7 @@ def create_options_embed():
     embed.add_field(name='Screenshot', value='📷', inline=True)
 
     return embed
+
 
 def create_accounts_embed(data):
 
@@ -437,6 +456,7 @@ def create_accounts_embed(data):
 
     return embed
 
+
 def create_available_accounts_embed(data):
 
     embed = discord.Embed(
@@ -453,5 +473,6 @@ def create_available_accounts_embed(data):
         )
 
     return embed
+
 
 bot.run(os.environ["DISCORD_TOKEN"])
