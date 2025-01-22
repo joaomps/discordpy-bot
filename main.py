@@ -1,4 +1,3 @@
-# This example requires the 'message_content' privileged intents
 
 import json
 import os
@@ -14,10 +13,10 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-app_ws = "https://expressjs-prisma-production-36b8.up.railway.app/commands/"
-app_createjob_ws = "https://expressjs-prisma-production-36b8.up.railway.app/createjob/"
-app_accounts_ws = "https://expressjs-prisma-production-36b8.up.railway.app/accounts"
-available_accounts_ws = 'https://expressjs-prisma-production-36b8.up.railway.app/available-accounts'
+app_ws = "https://expressjs-prisma-production.app/commands/"
+app_createjob_ws = "https://expressjs-prisma-production.app/createjob/"
+app_accounts_ws = "https://expressjs-prisma-production.app/accounts"
+available_accounts_ws = 'https://expressjs-prisma-production.app/available-accounts'
 
 headers = {"Content-Type": "application/json"}
 
@@ -36,7 +35,7 @@ PRESENCE_PENALTY = 0.6
 MAX_CONTEXT_QUESTIONS = 10
 
 past_conversations = {}
-openai.api_key = "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"
+openai.api_key = "123456"
 model = "gpt-3.5-turbo"
 ##
 
